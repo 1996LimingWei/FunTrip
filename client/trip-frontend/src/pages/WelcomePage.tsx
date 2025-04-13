@@ -4,12 +4,12 @@ import "../assets/WelcomePage.css";
 interface UserInfoProps {
     username: string;
     setUsername: (username: string) => void;
-    roomId: string;
-    setRoomId: (roomId: string) => void;
+    roomName: string;
+    setRoomName: (roomName: string) => void;
     handleJoinRoom: () => void;
 }
 
-const WelcomePage: React.FC<UserInfoProps> = ({username, setUsername, roomId, setRoomId, handleJoinRoom}) => {
+const WelcomePage: React.FC<UserInfoProps> = ({username, setUsername, roomName, setRoomName, handleJoinRoom}) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleMenu = () => {
@@ -75,12 +75,12 @@ const WelcomePage: React.FC<UserInfoProps> = ({username, setUsername, roomId, se
                         onChange={(e) => setUsername(e.target.value)}
                         className="block w-full mb-3 px-4 py-3 text-gray-700 border border-gray-300 rounded-md focus:ring focus:ring-gray-200 focus:border-gray-500"
                     />
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Room ID</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Room Name</label>
                     <input
                         type="text"
-                        placeholder="Enter room ID"
-                        value={roomId}
-                        onChange={(e) => setRoomId(e.target.value)}
+                        placeholder="Enter room name"
+                        value={roomName}
+                        onChange={(e) => setRoomName(e.target.value)}
                         className="block w-full mb-3 px-4 py-3 text-gray-700 border border-gray-300 rounded-md focus:ring focus:ring-gray-200 focus:border-gray-500"
                     />
                     <button

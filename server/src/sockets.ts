@@ -18,24 +18,24 @@ export default function initSockets(httpServer: HTTPServer) {
         allowEIO3: true
     });
 
-    const roomExist = (roomId : string) : boolean => {
-        return rooms[roomId] != null;
+    const roomExist = (roomName : string) : boolean => {
+        return rooms[roomName] != null;
     }
 
-    const createAndJoinRoom = (roomId: string, socket : Socket) => {
-        if(!roomExist(roomId)){
-            rooms[roomId] = new RoomInfo(roomId);
+    const createAndJoinRoom = (roomName: string, socket : Socket) => {
+        if(!roomExist(roomName)){
+            rooms[roomName] = new RoomInfo(roomName);
         }
 
-        if(rooms[roomId].requiresPassword){
+        if(rooms[roomName].requiresPassword){
             promptPassword();
         }
 
-        socket.join(roomId);
+        socket.join(roomName);
     }
 
-    const addUserToRoom = (socketId : string, roomId : string, username : string) => {
-        const room = rooms[roomId];
+    const addUserToRoom = (socketId : string, roomName : string, username : string) => {
+        const room = rooms[roomName];
 
         if(room.userExist(username)){
             promptChangeUserName();
@@ -54,24 +54,24 @@ export default function initSockets(httpServer: HTTPServer) {
         //TODO 
     }
 
-    const disconnectUserFromRoom = (roomId : string, username : string, io : Server ) => {
-        rooms[roomId].removeUser(username);
-        io.emit("userLeft", [...rooms[roomId].getUsers.keys()]);
+    const disconnectUserFromRoom = (roomName : string, username : string, io : Server ) => {
+        rooms[roomName].removeUser(username);
+        io.emit("userLeft", [...rooms[roomName].getUsers.keys()]);
     }
     
     io.on('connection', (socket) => {
     
-        socket.on('joinRoom', ({roomId, username} : {roomId : string; username : string}) => {
+        socket.on('joinRoom', ({roomName, username} : {roomName : string; username : string}) => {
 
-            createAndJoinRoom(roomId, socket);
-            addUserToRoom(socket.id, roomId, username);
+            createAndJoinRoom(roomName, socket);
+            addUserToRoom(socket.id, roomName, username);
 
-            io.to(roomId).emit('joinRoom', roomId);
-            io.to(roomId).emit('userJoined', [...rooms[roomId].getUsers.keys()]);
+            io.to(roomName).emit('joinRoom', roomName);
+            io.to(roomName).emit('userJoined', [...rooms[roomName].getUsers.keys()]);
     
             socket.on("disconnect", () => {
-                disconnectUserFromRoom(roomId, username, io);
-                socket.leave(roomId);
+                disconnectUserFromRoom(roomName, username, io);
+                socket.leave(roomName);
             })
     
             socket.on("exitRoom", (roomName: string) => {
@@ -80,9 +80,9 @@ export default function initSockets(httpServer: HTTPServer) {
             })
         });
     
-        socket.on("getUserNames", (roomId: string, callback: (users: string[]) => void) => {
-            if (rooms[roomId]) {
-                const userNames : Map<string, User> = rooms[roomId].getUsers; 
+        socket.on("getUserNames", (roomName: string, callback: (users: string[]) => void) => {
+            if (rooms[roomName]) {
+                const userNames : Map<string, User> = rooms[roomName].getUsers; 
                 callback([...userNames.keys()]);
             } else {
                 console.log("No users in the room");

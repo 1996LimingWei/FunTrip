@@ -15,7 +15,7 @@ export const Home = () => {
     const code = searchParams.get('code');
 
     const [userName, setUserName] = useState('');
-    const [roomId, setRoomId] = useState('');
+    const [roomName, setRoomName] = useState('');
     const [userJoined, setUserJoined] = useState(false);
 
     const [error, setError] = useState<string | null>(null);
@@ -24,14 +24,14 @@ export const Home = () => {
     const handleJoinRoom = () => {
 
         setCookie("username", userName, {expires: 7, path: "/"});
-        setCookie("roomId", roomId, {expires: 7, path: "/"});
+        setCookie("roomName", roomName, {expires: 7, path: "/"});
 
-        if (!userName.trim() || !roomId.trim()) {
-            alert("Please enter a valid username and room ID!");
+        if (!userName.trim() || !roomName.trim()) {
+            alert("Please enter a valid username and room name!");
             return;
         }
         if (socket) {
-            socket.emit("joinRoom", {roomId, username: userName});
+            socket.emit("joinRoom", {roomName, username: userName});
         }
         setUserJoined(true);
     };
@@ -39,11 +39,11 @@ export const Home = () => {
     // TODO use cookie to get and set user info, so when they come back, they are in the same session/room
     useEffect(() => {
         const savedUsername = getCookie("username");
-        const savedRoomId = getCookie("roomId");
+        const savedRoomName = getCookie("roomName");
 
-        if (savedUsername && savedRoomId) {
+        if (savedUsername && savedRoomName) {
             setUserName(savedUsername);
-            setRoomId(savedRoomId);
+            setRoomName(savedRoomName);
             setUserJoined(true);
         }
     }, []);
@@ -97,16 +97,15 @@ export const Home = () => {
                     <WelcomePage
                         username={userName}
                         setUsername={setUserName}
-                        roomId={roomId}
-                        setRoomId={setRoomId}
+                        roomName={roomName}
+                        setRoomName={setRoomName}
                         handleJoinRoom={handleJoinRoom}
                     />) :
                     <Room 
                         socket={socket} 
-                        // joinedUser={joinedUser} 
-                        roomId={roomId} 
+                        roomName={roomName} 
                         setUserJoined={setUserJoined}
-                        currentUser={userName}
+                        currentUser={{ id: userName, username: userName }}
                     />
             }
             {/* TODO Update Modal for more Error Messages */

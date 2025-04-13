@@ -3,17 +3,15 @@ import { Socket } from 'socket.io-client';
 import { User } from '../../types/index';
 import { getCookie, removeCookie } from "../../tools/Cookies";
 
-
 interface JoinedUsersProps {
     roomName: string;
     socket: Socket;
     setUserJoined: React.Dispatch<React.SetStateAction<boolean>>;
-    currentUser: string;
+    currentUser: User;
 }
 
 const JoinedUsers: React.FC<JoinedUsersProps> = ({ roomName, socket, setUserJoined, currentUser }) => {
-
-    const [joinedUser, setJoinedUsers] = useState<string[]>([]);
+    const [joinedUser, setJoinedUsers] = useState<User[]>([]);
 
     /** 
      * Why cookies are used? 
@@ -24,19 +22,19 @@ const JoinedUsers: React.FC<JoinedUsersProps> = ({ roomName, socket, setUserJoin
     */
     useEffect(() => {
         const savedUserName = getCookie("username");
-        const savedRoomId = getCookie("roomId");
+        const savedRoomName = getCookie("roomName");
 
-        socket.emit("joinRoom", { roomId: savedRoomId, username: savedUserName });
+        socket.emit("joinRoom", { roomName: savedRoomName, username: savedUserName });
     }, []);
 
     // listen and update for userJoined and userLeft events
     useEffect(() => {
         if (socket) {
             socket.on("userJoined", (updatedUserNames: string[]) => {
-                setJoinedUsers(updatedUserNames);
+                setJoinedUsers(updatedUserNames.map(username => ({ id: username, username })));
             });
             socket.on("userLeft", (updatedUserNames: string[]) => {
-                setJoinedUsers(updatedUserNames);
+                setJoinedUsers(updatedUserNames.map(username => ({ id: username, username })));
             });
         }
 
@@ -56,14 +54,13 @@ const JoinedUsers: React.FC<JoinedUsersProps> = ({ roomName, socket, setUserJoin
         setUserJoined(false);
 
         removeCookie("username");
-        removeCookie("roomId");
+        removeCookie("roomName");
         
         socket.emit("exitRoom", roomName);
-        socket.emit("getUserNames", roomName, (users: string[]) => {
-            setJoinedUsers(users);
+        socket.emit("getUserNames", roomName, (userNames: string[]) => {
+            setJoinedUsers(userNames.map(username => ({ id: username, username })));
         });
     };
-
 
     return (
         <aside className="w-64 h-screen bg-gray-50 p-4 overflow-y-auto border-r">
@@ -81,21 +78,19 @@ const JoinedUsers: React.FC<JoinedUsersProps> = ({ roomName, socket, setUserJoin
                         title="Leave Room"
                         onClick={handleUserLeave}
                     ></i>
-
                 </div>
             </div>
             <h3>Welcome to room {roomName}</h3>
             <nav>
                 <ul>
-
-                    {joinedUser.map((username, idx) => (
+                    {joinedUser.map((user, idx) => (
                         <li 
                             key={idx} 
                             className={`py-2 px-4 text-sm hover:bg-gray-200 rounded ${
-                                username === currentUser ? "text-orange-500 font-medium" : "text-gray-700"
+                                user.username === currentUser.username ? "bg-orange-100 text-orange-600 font-medium" : "text-gray-700"
                             }`}
                         >
-                            {username}
+                            {user.username}
                         </li>
                     ))}
                 </ul>

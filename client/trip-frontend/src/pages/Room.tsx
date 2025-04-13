@@ -3,16 +3,23 @@ import CurrentSongQueue from "../components/CurrentSongQueue"
 import PlayLists from "../components/PlayLists"
 import TextInput from "../components/TextInput"
 import JoinedUsers from "../components/Users/JoinedUsers"
-import { RoomProps, SongObj, User } from '../types/index.ts';
+import { Socket } from 'socket.io-client';
+import { User, SongObj } from '../types/index.ts';
 import { useState } from "react"
 
-export const Room : React.FC<RoomProps> = ({ socket, roomId, setUserJoined, currentUser }) => {
+interface RoomProps {
+    socket: Socket;
+    roomName: string;
+    setUserJoined: React.Dispatch<React.SetStateAction<boolean>>;
+    currentUser: User;
+}
+
+export const Room : React.FC<RoomProps> = ({ socket, roomName, setUserJoined, currentUser }) => {
     const [currentQueue, setCurrentQueue] = useState<SongObj[]>([]);
     const handleAddToQueue = (selectedTracks: SpotifyApi.PlaylistTrackObject[]) => {
-        const songObjs : SongObj[] = selectedTracks.map((track) => ({
-            spotifyData : track,
+        const songObjs: SongObj[] = selectedTracks.map((track) => ({
+            spotifyData: track,
         }));
-
         setCurrentQueue((prev) => [...prev, ...songObjs]);
     };
 
@@ -20,7 +27,7 @@ export const Room : React.FC<RoomProps> = ({ socket, roomId, setUserJoined, curr
         <div className="w-screen flex h-screen">
             <JoinedUsers 
                 socket={socket} 
-                roomName={roomId} 
+                roomName={roomName} 
                 setUserJoined={setUserJoined} 
                 currentUser={currentUser}
             />
@@ -28,7 +35,7 @@ export const Room : React.FC<RoomProps> = ({ socket, roomId, setUserJoined, curr
                 {/* Main area above the search bar */}
                 <div className="p-6">
                     {/* Room name and Current Song Queue */}
-                    <h1 className="text-2xl font-bold mb-2">{roomId}</h1>
+                    <h1 className="text-2xl font-bold mb-2">{roomName}</h1>
                     <AudioPlayer songs={currentQueue} />
                     <CurrentSongQueue songs={currentQueue} />
                 </div>
